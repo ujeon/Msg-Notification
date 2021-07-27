@@ -6,14 +6,21 @@
 //
 
 import UIKit
+import UserNotifications
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-
-
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        if #available(iOS 10.0, *) {
+            let notiCenter = UNUserNotificationCenter.current()
+            notiCenter.requestAuthorization(options: [.alert, .badge, .sound]) { (didAllow, e) in}
+            notiCenter.delegate = self
+        } else {
+            let setting = UNNotificationSettings(coder: <#T##NSCoder#>)
+        }
+        
         return true
     }
 
@@ -30,7 +37,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
-
-
+    
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        if notification.request.identifier == "wakeup" {
+            let userInfo = notification.request.content.userInfo
+            print(userInfo["name"]!)
+        }
+        
+        completionHandler([.alert, .badge, .sound])
+    }
+    
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.identifier == "wakeup" {
+            let userInfo = response.notification.request.content.userInfo
+            print(userInfo["name"]!)
+        }
+        
+        completionHandler()
+    }
 }
 
